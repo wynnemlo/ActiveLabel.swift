@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        label.customize { label in
+        _ = label.customize { label in
             label.text = "This is a post with #multiple #hashtags and a @userhandle. Links are also supported like this one: http://optonaut.co."
             label.numberOfLines = 0
             label.lineSpacing = 4
@@ -27,9 +27,9 @@ class ViewController: UIViewController {
             label.URLColor = UIColor(red: 85.0/255, green: 238.0/255, blue: 151.0/255, alpha: 1)
             label.URLSelectedColor = UIColor(red: 82.0/255, green: 190.0/255, blue: 41.0/255, alpha: 1)
 
-            label.handleMentionTap { self.alert("Mention", message: $0) }
-            label.handleHashtagTap { self.alert("Hashtag", message: $0) }
-            label.handleURLTap { self.alert("URL", message: $0.absoluteString) }
+            label.handleMentionTap { self.alert(title: "Mention", message: $0) }
+            label.handleHashtagTap { self.alert(title: "Hashtag", message: $0) }
+            label.handleURLTap { self.alert(title: "URL", message: $0.absoluteString!) }
         }
         
         label.frame = CGRect(x: 20, y: 40, width: view.frame.width - 40, height: 300)
@@ -45,9 +45,9 @@ class ViewController: UIViewController {
     }
     
     func alert(title: String, message: String) {
-        let vc = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        vc.addAction(UIAlertAction(title: "Ok", style: .Cancel, handler: nil))
-        presentViewController(vc, animated: true, completion: nil)
+        let vc = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        vc.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        present(vc, animated: true, completion: nil)
     }
 
 }
