@@ -18,6 +18,11 @@ struct RegexParser {
     static let mentionRegex = try? NSRegularExpression(pattern: "(?:^|\\s|$|[.])@[\\p{L}0-9_]*", options: [.CaseInsensitive]);
     static let urlDetector = try? NSRegularExpression(pattern: urlPattern, options: [.CaseInsensitive])
     
+    static func getCustoms(fromText text: String, targetText: String, range: NSRange) -> [NSTextCheckingResult] {
+        guard let customRegex = try? NSRegularExpression.init(pattern: "\\b\(targetText)\\b", options: []) else { return [] }
+        return customRegex.matchesInString(text, options: [], range: range)
+    }
+    
     static func getMentions(fromText text: String, range: NSRange) -> [NSTextCheckingResult] {
         guard let mentionRegex = mentionRegex else { return [] }
         return mentionRegex.matchesInString(text, options: [], range: range)

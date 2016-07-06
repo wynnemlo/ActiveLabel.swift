@@ -12,6 +12,7 @@ enum ActiveElement {
     case Mention(String)
     case Hashtag(String)
     case URL(String)
+    case Custom(String)
     case None
 }
 
@@ -19,12 +20,58 @@ public enum ActiveType {
     case Mention
     case Hashtag
     case URL
+    case Custom
     case None
 }
 
 typealias ActiveFilterPredicate = (String -> Bool)
 
 struct ActiveBuilder {
+    static func createCustomElements(fromText text: String, range: NSRange, targetTexts: [String]) -> [(range: NSRange, element: ActiveElement)] {
+        var elements: [(range: NSRange, element: ActiveElement)] = []
+        
+        targetTexts.forEach { (targetText) in
+            let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
+            
+            elements.appendContentsOf(
+                founds.map{ found in
+                    return (found.range, ActiveElement.Custom(targetText))
+                }
+            )
+        }
+        
+        return elements
+    }
+    
+    static func createCustomElementsOnFirstFoundTarget(fromText text: String, range: NSRange, targetTexts: [String]) -> [(range: NSRange, element: ActiveElement)] {
+        
+        var elements: [(range: NSRange, element: ActiveElement)] = []
+        
+        targetTexts.forEach { (targetText) in
+            let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
+            
+            if let found = founds.first {
+                elements.append((found.range, ActiveElement.Custom(targetText)))
+            }
+        }
+        
+        return elements
+    }
+    
+    static func createCustomElementsOnFirstFoundTargetFromBack(fromText text: String, range: NSRange, targetTexts: [String]) -> [(range: NSRange, element: ActiveElement)] {
+        
+        var elements: [(range: NSRange, element: ActiveElement)] = []
+        
+        targetTexts.forEach { (targetText) in
+            let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
+            
+            if let found = founds.last {
+                elements.append((found.range, ActiveElement.Custom(targetText)))
+            }
+        }
+        
+        return elements       
+    }
     
     static func createMentionElements(fromText text: String, range: NSRange, filterPredicate: ActiveFilterPredicate?) -> [(range: NSRange, element: ActiveElement)] {
         let mentions = RegexParser.getMentions(fromText: text, range: range)

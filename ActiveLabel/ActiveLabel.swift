@@ -18,6 +18,12 @@ public protocol ActiveLabelDelegate: class {
     // MARK: - public properties
     public weak var delegate: ActiveLabelDelegate?
     
+    @IBInspectable public var customColor: UIColor = .blueColor() {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    @IBInspectable public var customSelectedColor: UIColor? {
+        didSet { updateTextStorage(parseText: false) }
+    }
     @IBInspectable public var mentionColor: UIColor = .blueColor() {
         didSet { updateTextStorage(parseText: false) }
     }
@@ -39,6 +45,32 @@ public protocol ActiveLabelDelegate: class {
     @IBInspectable public var lineSpacing: Float = 0 {
         didSet { updateTextStorage(parseText: false) }
     }
+    
+    // MARK: - custom target text
+    var customTragetTexts: [String] = []
+    var customTragetOnlyFirstFoundTexts: [String] = []
+    var customTragetOnlyFirstFoundFromBackTexts: [String] = []
+    
+    public func addCustomTargetText(targetText: String) {
+        customTragetTexts.append(targetText)
+        updateTextStorage()
+    }
+    
+    public func addCustomFirstFoundTargetText(targetText: String) {
+        customTragetOnlyFirstFoundTexts.append(targetText)
+        updateTextStorage()
+    }
+    
+    public func addCustomFirstFoundFromBackTargetText(targetText: String) {
+        customTragetOnlyFirstFoundFromBackTexts.append(targetText)
+        updateTextStorage()
+    }
+    
+    func clearCustomTargets() {
+        customTragetTexts.removeAll()
+        customTragetOnlyFirstFoundTexts.removeAll()
+        customTragetOnlyFirstFoundFromBackTexts.removeAll()
+    }
 
     // MARK: - public methods
     public func handleMentionTap(handler: (String) -> ()) {
@@ -51,6 +83,10 @@ public protocol ActiveLabelDelegate: class {
     
     public func handleURLTap(handler: (NSURL) -> ()) {
         urlTapHandler = handler
+    }
+    
+    public func handleCustomTargetTap(handler: (String) -> ()) {
+        customTargetTapHandler = handler
     }
 
     public func filterMention(predicate: (String) -> Bool) {
@@ -163,6 +199,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(let userHandle): didTapMention(userHandle)
             case .Hashtag(let hashtag): didTapHashtag(hashtag)
             case .URL(let url): didTapStringURL(url)
+            case .Custom(let customText): didTapCustomTarget(customText)
             case .None: ()
             }
             
@@ -188,6 +225,7 @@ public protocol ActiveLabelDelegate: class {
     private var mentionTapHandler: ((String) -> ())?
     private var hashtagTapHandler: ((String) -> ())?
     private var urlTapHandler: ((NSURL) -> ())?
+    private var customTargetTapHandler : ((String) -> ())?
 
     private var mentionFilterPredicate: ((String) -> Bool)?
     private var hashtagFilterPredicate: ((String) -> Bool)?
@@ -201,6 +239,7 @@ public protocol ActiveLabelDelegate: class {
         .Mention: [],
         .Hashtag: [],
         .URL: [],
+        .Custom: [],
     ]
     
     // MARK: - helper functions
@@ -266,6 +305,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention: attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL: attributes[NSForegroundColorAttributeName] = URLColor
+            case .Custom(_): attributes[NSForegroundColorAttributeName] = customColor
             case .None: ()
             }
             
@@ -292,6 +332,12 @@ public protocol ActiveLabelDelegate: class {
         //MENTIONS
         let mentionElements = ActiveBuilder.createMentionElements(fromText: textString, range: textRange, filterPredicate: mentionFilterPredicate)
         activeElements[.Mention]?.appendContentsOf(mentionElements)
+        
+        //CUSTOMS
+        var customElements = ActiveBuilder.createCustomElements(fromText: textString, range: textRange, targetTexts: customTragetTexts)
+        customElements.appendContentsOf(ActiveBuilder.createCustomElementsOnFirstFoundTarget(fromText: textString, range: textRange, targetTexts: customTragetOnlyFirstFoundTexts))
+        customElements.appendContentsOf(ActiveBuilder.createCustomElementsOnFirstFoundTargetFromBack(fromText: textString, range: textRange, targetTexts: customTragetOnlyFirstFoundFromBackTexts))
+        activeElements[.Custom]?.appendContentsOf(customElements)
     }
 
     
@@ -324,6 +370,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagSelectedColor ?? hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLSelectedColor ?? URLColor
+            case .Custom(_): attributes[NSForegroundColorAttributeName] = customSelectedColor ?? customColor
             case .None: ()
             }
         } else {
@@ -331,6 +378,7 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLColor
+            case .Custom(_): attributes[NSForegroundColorAttributeName] = customColor
             case .None: ()
             }
         }
@@ -412,6 +460,14 @@ public protocol ActiveLabelDelegate: class {
             return
         }
         urlHandler(url)
+    }
+    
+    private func didTapCustomTarget(customText: String) {
+        guard let customTargetTapHandler = customTargetTapHandler else {
+            delegate?.didSelectText(customText, type: .Custom)
+            return
+        }
+        customTargetTapHandler(customText)
     }
 }
 
