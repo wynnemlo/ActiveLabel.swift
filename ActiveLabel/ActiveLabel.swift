@@ -66,7 +66,7 @@ public protocol ActiveLabelDelegate: class {
         updateTextStorage()
     }
     
-    func clearCustomTargets() {
+    public func clearCustomTargets() {
         customTragetTexts.removeAll()
         customTragetOnlyFirstFoundTexts.removeAll()
         customTragetOnlyFirstFoundFromBackTexts.removeAll()
