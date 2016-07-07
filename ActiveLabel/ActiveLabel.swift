@@ -293,7 +293,7 @@ public protocol ActiveLabelDelegate: class {
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributesAtIndex(0, effectiveRange: &range)
         
-        attributes[NSFontAttributeName] = font!
+//        attributes[NSFontAttributeName] = font!
         attributes[NSForegroundColorAttributeName] = textColor
         mutAttrString.addAttributes(attributes, range: range)
         
