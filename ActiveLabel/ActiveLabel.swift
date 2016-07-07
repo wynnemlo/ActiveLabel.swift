@@ -18,7 +18,7 @@ public protocol ActiveLabelDelegate: class {
     // MARK: - public properties
     public weak var delegate: ActiveLabelDelegate?
     
-    @IBInspectable public var customColor: UIColor = .blueColor() {
+    @IBInspectable public var customColor: UIColor?  {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable public var customSelectedColor: UIColor? {
@@ -301,11 +301,17 @@ public protocol ActiveLabelDelegate: class {
         
         for (type, elements) in activeElements {
             
+            if type == ActiveType.Custom {
+                if customColor == nil {
+                    continue
+                }
+            }
+            
             switch type {
             case .Mention: attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL: attributes[NSForegroundColorAttributeName] = URLColor
-            case .Custom(_): attributes[NSForegroundColorAttributeName] = customColor
+            case .Custom: attributes[NSForegroundColorAttributeName] = customColor
             case .None: ()
             }
             
@@ -363,14 +369,18 @@ public protocol ActiveLabelDelegate: class {
         guard let selectedElement = selectedElement else {
             return
         }
-        
+       
         var attributes = textStorage.attributesAtIndex(0, effectiveRange: nil)
         if isSelected {
             switch selectedElement.element {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagSelectedColor ?? hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLSelectedColor ?? URLColor
-            case .Custom(_): attributes[NSForegroundColorAttributeName] = customSelectedColor ?? customColor
+            case .Custom(_):
+                if customSelectedColor == nil {
+                    return
+                }
+                attributes[NSForegroundColorAttributeName] = customSelectedColor ?? customColor
             case .None: ()
             }
         } else {
@@ -378,7 +388,11 @@ public protocol ActiveLabelDelegate: class {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionColor
             case .Hashtag(_): attributes[NSForegroundColorAttributeName] = hashtagColor
             case .URL(_): attributes[NSForegroundColorAttributeName] = URLColor
-            case .Custom(_): attributes[NSForegroundColorAttributeName] = customColor
+            case .Custom(_):
+                if customColor == nil {
+                    return
+                }
+                attributes[NSForegroundColorAttributeName] = customColor
             case .None: ()
             }
         }
