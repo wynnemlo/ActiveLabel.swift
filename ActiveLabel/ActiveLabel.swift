@@ -290,14 +290,6 @@ public protocol ActiveLabelDelegate: class {
     
     /// add link attribute
     private func addLinkAttribute(mutAttrString: NSMutableAttributedString) {
-        var range = NSRange(location: 0, length: 0)
-        var attributes = mutAttrString.attributesAtIndex(0, effectiveRange: &range)
-        
-//        attributes[NSFontAttributeName] = font!
-        attributes[NSForegroundColorAttributeName] = textColor
-        mutAttrString.addAttributes(attributes, range: range)
-        
-        attributes[NSForegroundColorAttributeName] = mentionColor
         
         for (type, elements) in activeElements {
             
@@ -307,15 +299,22 @@ public protocol ActiveLabelDelegate: class {
                 }
             }
             
+            var foregroundColor : UIColor?
+            
             switch type {
-            case .Mention: attributes[NSForegroundColorAttributeName] = mentionColor
-            case .Hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
-            case .URL: attributes[NSForegroundColorAttributeName] = URLColor
-            case .Custom: attributes[NSForegroundColorAttributeName] = customColor
+            case .Mention: foregroundColor = mentionColor
+            case .Hashtag: foregroundColor = hashtagColor
+            case .URL: foregroundColor = URLColor
+            case .Custom: foregroundColor = customColor
             case .None: ()
             }
             
+            if foregroundColor == nil { continue }
+            
             for element in elements {
+                var attributes = mutAttrString.attributesAtIndex(element.range.location, effectiveRange: nil)
+                attributes[NSForegroundColorAttributeName] = foregroundColor!
+            
                 mutAttrString.setAttributes(attributes, range: element.range)
             }
         }
@@ -370,7 +369,7 @@ public protocol ActiveLabelDelegate: class {
             return
         }
        
-        var attributes = textStorage.attributesAtIndex(0, effectiveRange: nil)
+        var attributes = textStorage.attributesAtIndex(selectedElement.range.location , effectiveRange: nil)
         if isSelected {
             switch selectedElement.element {
             case .Mention(_): attributes[NSForegroundColorAttributeName] = mentionSelectedColor ?? mentionColor
