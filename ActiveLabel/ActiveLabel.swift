@@ -459,7 +459,7 @@ public protocol ActiveLabelDelegate: class {
         mentionHandler(username)
     }
     
-    private func didTapHashtag(hashtag: String) {
+    public func didTapHashtag(hashtag: String) {
         guard let hashtagHandler = hashtagTapHandler else {
             delegate?.didSelectText(hashtag, type: .Hashtag)
             return
@@ -467,7 +467,7 @@ public protocol ActiveLabelDelegate: class {
         hashtagHandler(hashtag)
     }
     
-    private func didTapStringURL(stringURL: String) {
+    public func didTapStringURL(stringURL: String) {
         guard let urlHandler = urlTapHandler, let url = NSURL(string: stringURL) else {
             delegate?.didSelectText(stringURL, type: .URL)
             return
@@ -475,7 +475,7 @@ public protocol ActiveLabelDelegate: class {
         urlHandler(url)
     }
     
-    private func didTapCustomTarget(customText: String) {
+    public func didTapCustomTarget(customText: String) {
         guard let customTargetTapHandler = customTargetTapHandler else {
             delegate?.didSelectText(customText, type: .Custom)
             return
