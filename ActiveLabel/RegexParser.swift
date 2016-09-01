@@ -15,7 +15,7 @@ struct RegexParser {
     "(?=$|[\\s',\\|\\(\\).:;?\\-\\[\\]>\\)])"
     
     static let hashtagRegex = try? NSRegularExpression(pattern: "(?:^|\\s|$)#[\\p{L}0-9_]*", options: [.CaseInsensitive])
-    static let mentionRegex = try? NSRegularExpression(pattern: "(?:^|\\s|$|[.])@[\\p{L}0-9_.]*", options: [.CaseInsensitive]);
+    static let mentionRegex = try? NSRegularExpression(pattern: "(?:^|\\s|$|[.])@[\\p{L}0-9-_.]*", options: [.CaseInsensitive]);
     static let urlDetector = try? NSRegularExpression(pattern: urlPattern, options: [.CaseInsensitive])
     
     static func getCustoms(fromText text: String, targetText: String, range: NSRange) -> [NSTextCheckingResult] {
