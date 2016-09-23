@@ -9,22 +9,22 @@
 import Foundation
 
 enum ActiveElement {
-    case Mention(String)
-    case Hashtag(String)
-    case URL(String)
-    case Custom(String)
-    case None
+    case mention(String)
+    case hashtag(String)
+    case url(String)
+    case custom(String)
+    case none
 }
 
 public enum ActiveType {
-    case Mention
-    case Hashtag
-    case URL
-    case Custom
-    case None
+    case mention
+    case hashtag
+    case url
+    case custom
+    case none
 }
 
-typealias ActiveFilterPredicate = (String -> Bool)
+typealias ActiveFilterPredicate = ((String) -> Bool)
 
 struct ActiveBuilder {
     static func createCustomElements(fromText text: String, range: NSRange, targetTexts: [String]) -> [(range: NSRange, element: ActiveElement)] {
@@ -33,9 +33,9 @@ struct ActiveBuilder {
         targetTexts.forEach { (targetText) in
             let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
             
-            elements.appendContentsOf(
-                founds.map{ found in
-                    return (found.range, ActiveElement.Custom(targetText))
+            elements.append(
+                contentsOf: founds.map{ found in
+                    return (found.range, ActiveElement.custom(targetText))
                 }
             )
         }
@@ -51,7 +51,7 @@ struct ActiveBuilder {
             let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
             
             if let found = founds.first {
-                elements.append((found.range, ActiveElement.Custom(targetText)))
+                elements.append((found.range, ActiveElement.custom(targetText)))
             }
         }
         
@@ -66,7 +66,7 @@ struct ActiveBuilder {
             let founds = RegexParser.getCustoms(fromText: text, targetText: targetText, range: range)
             
             if let found = founds.last {
-                elements.append((found.range, ActiveElement.Custom(targetText)))
+                elements.append((found.range, ActiveElement.custom(targetText)))
             }
         }
         
@@ -80,13 +80,13 @@ struct ActiveBuilder {
         
         for mention in mentions where mention.range.length > 2 {
             let range = NSRange(location: mention.range.location + 1, length: mention.range.length - 1)
-            var word = nsstring.substringWithRange(range)
+            var word = nsstring.substring(with: range)
             if word.hasPrefix("@") {
-                word.removeAtIndex(word.startIndex)
+                word.remove(at: word.startIndex)
             }
 
             if filterPredicate?(word) ?? true {
-                let element = ActiveElement.Mention(word)
+                let element = ActiveElement.mention(word)
                 elements.append((mention.range, element))
             }
         }
@@ -100,13 +100,13 @@ struct ActiveBuilder {
         
         for hashtag in hashtags where hashtag.range.length > 2 {
             let range = NSRange(location: hashtag.range.location + 1, length: hashtag.range.length - 1)
-            var word = nsstring.substringWithRange(range)
+            var word = nsstring.substring(with: range)
             if word.hasPrefix("#") {
-                word.removeAtIndex(word.startIndex)
+                word.remove(at: word.startIndex)
             }
 
             if filterPredicate?(word) ?? true {
-                let element = ActiveElement.Hashtag(word)
+                let element = ActiveElement.hashtag(word)
                 elements.append((hashtag.range, element))
             }
         }
@@ -119,9 +119,9 @@ struct ActiveBuilder {
         var elements: [(range: NSRange, element: ActiveElement)] = []
         
         for url in urls where url.range.length > 2 {
-            let word = nsstring.substringWithRange(url.range)
-                .stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet())
-            let element = ActiveElement.URL(word)
+            let word = nsstring.substring(with: url.range)
+                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            let element = ActiveElement.url(word)
             elements.append((url.range, element))
         }
         return elements
