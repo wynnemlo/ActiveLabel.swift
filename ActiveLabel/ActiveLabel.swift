@@ -158,14 +158,14 @@ public protocol ActiveLabelDelegate: class {
     
     
     // MARK: - customzation
-    public func customize(block: (label: ActiveLabel) -> ()) -> ActiveLabel{
+    public func customize(block: (ActiveLabel) -> ()) -> ActiveLabel {
         _customizing = true
-        block(label: self)
+        block(self)
         _customizing = false
         updateTextStorage()
         return self
     }
-
+    
     // MARK: - Auto layout
     public override func intrinsicContentSize() -> CGSize {
         let superSize = super.intrinsicContentSize()
@@ -255,7 +255,15 @@ public protocol ActiveLabelDelegate: class {
     private func updateTextStorage(parseText parseText: Bool = true) {
         if _customizing { return }
         // clean up previous active elements
-        guard let attributedText = attributedText where attributedText.length > 0 else {
+        
+        guard let attributedText = attributedText else {
+            clearActiveElements()
+            textStorage.setAttributedString(NSAttributedString())
+            setNeedsDisplay()
+            return
+        }
+        
+        if attributedText.length < 0 {
             clearActiveElements()
             textStorage.setAttributedString(NSAttributedString())
             setNeedsDisplay()
@@ -441,7 +449,7 @@ public protocol ActiveLabelDelegate: class {
     public override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
         guard let touch = touches?.first else { return }
         onTouch(touch)
-        super.touchesCancelled(touches, withEvent: event)
+        super.touchesCancelled(touches!, withEvent: event)
     }
     
     public override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
